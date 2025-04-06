@@ -64,9 +64,9 @@ export default function Dashboard() {
   const pendingSymbols = ALL_SYMBOLS.filter(symbol => !loadedSymbols.includes(symbol));
   
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div>
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4 sm:mb-0">Stock Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4 sm:mb-0">US Stock Dashboard</h1>
         
         <div className="flex items-center">
           {loadingMessage && (

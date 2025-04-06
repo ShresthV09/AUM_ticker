@@ -36,3 +36,36 @@ export interface CompanyProfile {
   ticker: string;
   weburl: string;
 }
+
+export interface BSEIndexData {
+  indexName: string;
+  open: number;
+  high: number;
+  low: number;
+  currentValue: number;
+  prevClose: number;
+  changePoints: number;
+  changePercent: number;
+  week52High: number;
+  week52Low: number;
+  turnoverCrore: number;
+  percentInTotalTurnover: number;
+}
+
+export interface NSEIndexData {
+  indexName: string;
+  currentValue: number;
+  changePercent: number;
+  changePoints?: number;
+  open: number;
+  high: number;
+  low: number;
+  indicativeClose: string;
+  prevClose: number;
+  prevDay: number;
+  oneWeekAgo: number;
+  oneMonthAgo: number;
+  oneYearAgo: number;
+  week52High: number;
+  week52Low: number;
+}
