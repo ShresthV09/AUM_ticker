@@ -22,6 +22,11 @@ export default function Dashboard() {
     fetcher,
     {
       revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      refreshWhenHidden: false,
+      refreshWhenOffline: false,
+      revalidateIfStale: false,
+      refreshInterval: 0, // Disable polling
     }
   );
 
