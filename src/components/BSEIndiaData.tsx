@@ -74,18 +74,7 @@ export default function BSEIndiaData() {
               <div className="font-semibold">
                 {market.currentValue.toLocaleString('en-IN')}
               </div>
-              <div className="flex space-x-2 text-sm">
-                <span className={market.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}>
-                  {market.changePercent >= 0 ? '+' : ''}{market.changePercent.toFixed(2)}%
-                </span>
-                <span className={market.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}>
-                  {market.changePercent >= 0 ? '+' : ''}
-                  {typeof market.changePoints !== 'undefined' 
-                    ? market.changePoints.toLocaleString('en-IN')
-                    : ((market.currentValue - market.prevClose) || 0).toFixed(2)
-                  }
-                </span>
-              </div>
+             
             </div>
           </div>
         ))}

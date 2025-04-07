@@ -76,14 +76,7 @@ const USMarkets = () => {
               <div className="font-semibold">
                 {market.currentValue.toLocaleString()}
               </div>
-              <div className="flex space-x-2 text-sm">
-                <span className={market.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}>
-                  {market.changePercent >= 0 ? '+' : ''}{market.changePercent.toFixed(2)}%
-                </span>
-                <span className={market.changePoints >= 0 ? 'text-green-600' : 'text-red-600'}>
-                  {market.changePoints >= 0 ? '+' : ''}{market.changePoints.toLocaleString()}
-                </span>
-              </div>
+             
             </div>
           </div>
         ))}
