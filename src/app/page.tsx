@@ -5,6 +5,7 @@ import NSEIndiaData from "../components/NSEIndiaData";
 import USMarkets from "@/components/USMarkets";
 import Dashboard from '@/components/Dashboard';
 
+
 export default function Home() {
  
   return (
@@ -14,6 +15,7 @@ export default function Home() {
         <div className="w-full mb-10">
           <Dashboard />
         </div>
+       
        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-8">
           <div className="flex flex-col">
