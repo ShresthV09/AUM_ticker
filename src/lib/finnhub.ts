@@ -2,7 +2,12 @@ import axios from "axios";
 import { StockQuote, CompanyProfile, StockData } from "@/types";
 
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
-console.log(FINNHUB_API_KEY);
+console.log(
+  "API Key length:",
+  FINNHUB_API_KEY ? FINNHUB_API_KEY.length : 0,
+  "API Key present:",
+  !!FINNHUB_API_KEY
+);
 const BASE_URL = "https://finnhub.io/api/v1";
 
 // Create axios instance with API key
@@ -12,6 +17,36 @@ const finnhubClient = axios.create({
     token: FINNHUB_API_KEY,
   },
 });
+
+// Add request interceptor for logging
+finnhubClient.interceptors.request.use((request) => {
+  console.log("Starting Request to Finnhub:", request.url, "with params:", {
+    ...request.params,
+    token: request.params.token ? "***PRESENT***" : "***MISSING***",
+  });
+  return request;
+});
+
+// Add response interceptor for logging
+finnhubClient.interceptors.response.use(
+  (response) => {
+    console.log("Response from Finnhub:", response.status, response.statusText);
+    return response;
+  },
+  (error) => {
+    console.error(
+      "Finnhub API Error:",
+      error.response
+        ? {
+            status: error.response.status,
+            statusText: error.response.statusText,
+            data: error.response.data,
+          }
+        : error.message
+    );
+    return Promise.reject(error);
+  }
+);
 
 // Function to fetch stock quote from Finnhub
 export async function getStockQuote(symbol: string): Promise<StockQuote> {

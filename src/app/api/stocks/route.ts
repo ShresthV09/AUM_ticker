@@ -4,14 +4,15 @@ import { getBatchStockData, fallbackCompanyNames } from "@/lib/finnhub";
 
 // Meta, Apple, Google, Tesla, Microsoft, Amazon, Nvidia, Broadcom
 const ALL_SYMBOLS = [
-  "META",
   "AAPL",
-  "GOOGL",
-  "TSLA",
   "MSFT",
-  "AMZN",
-  "NVDA",
-  "AVGO",
+  "GOOGL",
+  // Removing the rest of the symbols to reduce API calls
+  // "META",
+  // "TSLA",
+  // "AMZN",
+  // "NVDA",
+  // "AVGO",
 ];
 
 // Function to create mock data when API fails
