@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import axios from "axios";
 import * as cheerio from "cheerio";
 
-// Define the structure for US market data
+// Define USMarketData interface
 interface USMarketData {
   indexName: string;
   symbol: string;
@@ -11,29 +11,25 @@ interface USMarketData {
   changePoints: number;
 }
 
-// Define the US indices to track
-const US_INDICES = [
-  { id: "VIX", name: "VIX", exchange: "INDEXCBOE" },
-  { id: ".INX", name: "S&P 500", exchange: "INDEXSP" },
-  { id: ".IXIC", name: "NASDAQ", exchange: "INDEXNASDAQ" },
-  { id: ".DJI", name: "Dow Jones", exchange: "INDEXDJX" },
-];
-
 export async function GET() {
   try {
-    // Use browser-like headers to avoid blocks
+    // Browser-like headers to avoid being blocked
     const headers = {
       "User-Agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-      Accept:
-        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Cache-Control": "no-cache",
-      Pragma: "no-cache",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      Accept: "text/html",
     };
 
-    // Initialize the US markets data array
+    // Array to store US market data
     const usMarketData: USMarketData[] = [];
+
+    // US indices to track
+    const US_INDICES = [
+      { id: "VIX", name: "VIX", exchange: "INDEXCBOE" },
+      { id: ".INX", name: "S&P 500", exchange: "INDEXSP" },
+      { id: ".IXIC", name: "NASDAQ", exchange: "INDEXNASDAQ" },
+      { id: ".DJI", name: "Dow Jones", exchange: "INDEXDJX" },
+    ];
 
     // Process each US market index
     for (const index of US_INDICES) {
@@ -52,69 +48,123 @@ export async function GET() {
         // Parse the HTML response using cheerio
         const $ = cheerio.load(response.data);
 
-        // 1. Get the price (YMlKec fxKbKc class)
-        const priceText = $(".YMlKec.fxKbKc").first().text().trim();
-        const price = parseFloat(priceText.replace(/,/g, "")) || 0;
-        console.log(`Price: ${price} (from "${priceText}")`);
+        // Build a data extraction function specific to this index
+        const extractData = () => {
+          // 1. Get the price (YMlKec fxKbKc class)
+          const priceText = $(".YMlKec.fxKbKc").first().text().trim();
+          const price = parseFloat(priceText.replace(/,/g, "")) || 0;
+          console.log(`Price: ${price} (from "${priceText}")`);
 
-        // 2. Get the percentage change
-        // Use a more specific selector to target only the first JwB6zf element
-        const percentText = $("div.JwB6zf").first().text().trim();
-        let changePercent = 0;
+          // Variables to store the extracted data
+          let changePercent = 0;
+          let percentText = "";
+          let changePoints = 0;
+          let changeText = "";
 
-        if (percentText) {
-          // Extract the percentage value
-          const match = percentText.match(/([-+]?\d+\.?\d*)%/);
-          if (match && match[1]) {
-            changePercent = parseFloat(match[1]);
-            // Check for negative indicators
-            if (
-              percentText.includes("↓") ||
-              $("div.JwB6zf").first().closest("span.VOXKNe").length > 0
-            ) {
-              changePercent = -Math.abs(changePercent);
+          // Extract data differently based on the index
+          // VIX is special - it often moves opposite to the market
+          if (index.id === "VIX") {
+            // Look for percentage in nZQ6l (up) or VOXKNe (down) class
+            const upSelector = $("span.NydbP.nZQ6l");
+            const downSelector = $("span.NydbP.VOXKNe");
+
+            if (upSelector.length > 0) {
+              percentText = upSelector.text().trim();
+              const match = percentText.match(/([-+]?\d+\.\d+)%/);
+              if (match && match[1]) {
+                changePercent = parseFloat(match[1]);
+              }
+            } else if (downSelector.length > 0) {
+              percentText = downSelector.text().trim();
+              const match = percentText.match(/([-+]?\d+\.\d+)%/);
+              if (match && match[1]) {
+                changePercent = -parseFloat(match[1]);
+              }
+            }
+
+            // Get the points change - look for Ez2Ioe (up) or Ebnabc (down)
+            const upPoints = $("span.P2Luy.Ez2Ioe");
+            const downPoints = $("span.P2Luy.Ebnabc");
+
+            if (upPoints.length > 0) {
+              changeText = upPoints.text().trim();
+              const match = changeText.match(/([-+]?[\d,]+\.\d+)/);
+              if (match && match[1]) {
+                changePoints = parseFloat(match[1].replace(/,/g, ""));
+              }
+            } else if (downPoints.length > 0) {
+              changeText = downPoints.text().trim();
+              const match = changeText.match(/([-+]?[\d,]+\.\d+)/);
+              if (match && match[1]) {
+                changePoints = -parseFloat(match[1].replace(/,/g, ""));
+              }
+            }
+          } else {
+            // Regular market index
+            // Find the parent container for this index
+            const parentContainer = $(".ln0Gqe").first();
+
+            // Get percentage change
+            const percentElem = parentContainer.find("span.NydbP");
+            if (percentElem.length > 0) {
+              percentText = percentElem.text().trim();
+              const match = percentText.match(/([-+]?\d+\.\d+)%/);
+              if (match && match[1]) {
+                changePercent = parseFloat(match[1]);
+                // Check if it's a down percentage
+                if (percentElem.hasClass("VOXKNe")) {
+                  changePercent = -changePercent;
+                }
+              }
+            }
+
+            // Get points change
+            const changeElem = parentContainer.find("span.P2Luy");
+            if (changeElem.length > 0) {
+              changeText = changeElem.text().trim();
+              const match = changeText.match(/([-+]?[\d,]+\.\d+)/);
+              if (match && match[1]) {
+                changePoints = parseFloat(match[1].replace(/,/g, ""));
+                // Ensure sign is consistent with percent change
+                if (
+                  (changePercent < 0 && changePoints > 0) ||
+                  (changePercent > 0 && changePoints < 0)
+                ) {
+                  changePoints = -changePoints;
+                }
+              }
             }
           }
-        }
 
-        console.log(
-          `Percent Change: ${changePercent}% (from "${percentText}")`
-        );
+          console.log(
+            `Percent Change: ${changePercent}% (from "${percentText}")`
+          );
+          console.log(`Change Points: ${changePoints} (from "${changeText}")`);
 
-        // 3. Get the change points
-        // Try to get the exact element
-        const changeText = $("span.P2Luy").first().text().trim();
-        let changePoints = 0;
+          return {
+            price,
+            changePercent,
+            changePoints,
+          };
+        };
 
-        if (changeText) {
-          // Format is typically "-345.65 Today" or "+123.45 Today"
-          const match = changeText.match(/([-+]?[\d,.]+)/);
-          if (match && match[1]) {
-            changePoints = parseFloat(match[1].replace(/,/g, ""));
-            // Ensure sign matches percentage change
-            if (
-              (changePercent < 0 && changePoints > 0) ||
-              (changePercent > 0 && changePoints < 0)
-            ) {
-              changePoints = -changePoints;
-            }
-          }
-        }
-
-        console.log(`Change Points: ${changePoints} (from "${changeText}")`);
+        // Extract the data
+        const data = extractData();
 
         // Create US market data object
         const indexData: USMarketData = {
           indexName: index.name,
           symbol: index.id,
-          currentValue: price,
-          changePercent: changePercent,
-          changePoints: changePoints,
+          currentValue: data.price,
+          changePercent: data.changePercent,
+          changePoints: data.changePoints,
         };
 
         // Add to our US market data array
         usMarketData.push(indexData);
-        console.log(`Successfully processed data for ${index.name}: ${price}`);
+        console.log(
+          `Successfully processed data for ${index.name}: ${data.price}`
+        );
       } catch (error) {
         console.error(`Error fetching data for ${index.name}:`, error);
 

@@ -1,30 +1,41 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { BSEIndexData } from "@/types";
 
-// Google Finance symbols for BSE indices
-const BSE_INDICES = [
-  { id: "SENSEX", name: "BSE SENSEX", exchange: "INDEXBOM" },
-  { id: "BSE-500", name: "BSE 500", exchange: "INDEXBOM" },
-  { id: "BSE-SMLCAP", name: "BSE SMALLCAP", exchange: "INDEXBOM" },
-];
+// Interface for BSE index data
+interface BSEIndexData {
+  indexName: string;
+  currentValue: number;
+  open: number;
+  high: number;
+  low: number;
+  prevClose: number;
+  changePoints: number;
+  changePercent: number;
+  week52High: number;
+  week52Low: number;
+  turnoverCrore: number;
+  percentInTotalTurnover: number;
+}
 
 export async function GET() {
   try {
-    // Use browser-like headers to avoid blocks
+    // Browser-like headers to avoid being blocked
     const headers = {
       "User-Agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-      Accept:
-        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Cache-Control": "no-cache",
-      Pragma: "no-cache",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      Accept: "text/html",
     };
 
-    // Initialize the BSE data array
+    // Array to store BSE data
     const bseData: BSEIndexData[] = [];
+
+    // BSE indices to track
+    const BSE_INDICES = [
+      { id: "SENSEX", name: "BSE SENSEX", exchange: "INDEXBOM" },
+      { id: "BSE-500", name: "BSE 500", exchange: "INDEXBOM" },
+      { id: "BSE-SMLCAP", name: "BSE SMALLCAP", exchange: "INDEXBOM" },
+    ];
 
     // Process each BSE index
     for (const index of BSE_INDICES) {
@@ -45,53 +56,66 @@ export async function GET() {
 
         console.log(`Extracting data for ${index.name} with exact selectors`);
 
+        // First, find the main container that holds the data for this index
+
         // 1. Get the price (YMlKec fxKbKc class)
         const priceText = $(".YMlKec.fxKbKc").first().text().trim();
         const price = parseFloat(priceText.replace(/,/g, "")) || 0;
         console.log(`Price: ${price} (from "${priceText}")`);
 
-        // 2. Get the percentage change (inside JwB6zf div)
-        // Use a more specific selector to target only the first JwB6zf element
-        const percentText = $("div.JwB6zf").first().text().trim();
+        // Find the section that contains the up/down percentage
         let changePercent = 0;
+        let percentText = "";
 
-        // Parse the percentage text (usually in format "↓1.49%")
-        if (percentText) {
-          // Extract just the number and % sign
-          const percentMatch = percentText.match(/([-+]?\d+\.?\d*)%/);
-          if (percentMatch && percentMatch[1]) {
-            changePercent = parseFloat(percentMatch[1]);
-            // Check if it should be negative based on arrow direction
-            if (
-              percentText.includes("↓") ||
-              $("div.JwB6zf").first().closest("span.VOXKNe").length > 0
-            ) {
-              changePercent = -Math.abs(changePercent);
+        // 2. Look for the green/red percentage container
+        $(".NydbP").each((i, elem) => {
+          const text = $(elem).text().trim();
+          if (text.includes("%")) {
+            percentText = text;
+
+            // Extract the actual number from the percentage text
+            const match = text.match(/([-+]?\d+\.\d+)%/);
+            if (match && match[1]) {
+              changePercent = parseFloat(match[1]);
+
+              // Check if it has down arrow or is in the "down" span
+              if ($(elem).hasClass("VOXKNe")) {
+                changePercent = -Math.abs(changePercent);
+              }
             }
           }
-        }
+        });
+
         console.log(
           `Percent Change: ${changePercent}% (from "${percentText}")`
         );
 
-        // 3. Get the absolute change value - try both up and down classes
-        const changeText = $("span.P2Luy").first().text().trim();
+        // 3. Get the change points
         let change = 0;
+        let changeText = "";
 
-        if (changeText) {
-          // Format is typically "-345.65 Today" or "+123.45 Today"
-          const changeMatch = changeText.match(/([-+]?[\d,.]+)/);
-          if (changeMatch && changeMatch[1]) {
-            change = parseFloat(changeMatch[1].replace(/,/g, ""));
-            // Ensure sign matches percentage change
-            if (
-              (changePercent < 0 && change > 0) ||
-              (changePercent > 0 && change < 0)
-            ) {
-              change = -change;
+        // Get the change text based on the index we're looking at
+        $(".P2Luy").each((i, elem) => {
+          const text = $(elem).text().trim();
+          if (text.includes("Today")) {
+            changeText = text;
+
+            // Extract just the numeric part
+            const match = text.match(/([-+]?[\d,]+\.\d+)/);
+            if (match && match[1]) {
+              change = parseFloat(match[1].replace(/,/g, ""));
+
+              // Make sure the sign is correct
+              if (
+                (changePercent < 0 && change > 0) ||
+                (changePercent > 0 && change < 0)
+              ) {
+                change = -change;
+              }
             }
           }
-        }
+        });
+
         console.log(`Change Points: ${change} (from "${changeText}")`);
 
         // Get market data section info (open, high, low, etc.)
