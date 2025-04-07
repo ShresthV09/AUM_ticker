@@ -5,7 +5,7 @@ import Dashboard from '@/components/Dashboard';
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center p-2 bg-gray-100">
+    <main className="flex min-h-screen flex-col items-center p-2 bg-gray-900">
       <div className="z-10 w-full max-w-6xl">
         {/* Side-by-side layout with more compact spacing */}
         <div className="flex flex-col lg:flex-row gap-2">
@@ -13,28 +13,52 @@ export default function Home() {
           <div className="w-full lg:w-1/3">
             <div className="overflow-hidden text-xs">
               <style jsx global>{`
-                .text-xs .text-lg, .text-xs h2 {
+                /* Force proper contrast for dark theme */
+                .bg-white {
+                  background-color: #1e293b !important; /* dark blue-gray */
+                  color: #e2e8f0 !important;
+                }
+                .text-gray-500 {
+                  color: #94a3b8 !important; /* lighter blue-gray */
+                }
+                .text-gray-900, .text-gray-600, .font-medium, .font-semibold, .font-bold, h1, h2 {
+                  color: #f1f5f9 !important;
+                }
+                .border-b {
+                  border-color: #475569 !important;
+                }
+                .text-lg, .text-xs h2 {
                   font-size: 0.75rem !important;
                   line-height: 1rem !important;
                 }
-                .text-xs .text-sm {
+                .text-sm {
                   font-size: 0.65rem !important;
                   line-height: 0.9rem !important;
                 }
-                .text-xs .p-4 {
+                .p-4 {
                   padding: 0.5rem !important;
                 }
-                .text-xs .mb-3, .text-xs .mb-4 {
+                .mb-3, .mb-4 {
                   margin-bottom: 0.5rem !important;
                 }
-                .text-xs .space-y-3 > * {
+                .shadow {
+                  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5) !important;
+                }
+                .space-y-3 > * {
                   margin-top: 0.5rem !important;
                   margin-bottom: 0.5rem !important;
                 }
-                .text-xs .pb-3 {
+                .pb-3 {
                   padding-bottom: 0.5rem !important;
                 }
-                .text-xs .truncate-text {
+                button.bg-gray-200 {
+                  background-color: #334155 !important;
+                  color: #e2e8f0 !important;
+                }
+                button.bg-gray-200:hover {
+                  background-color: #475569 !important;
+                }
+                .truncate-text {
                   white-space: nowrap;
                   overflow: hidden;
                   text-overflow: ellipsis;
@@ -48,6 +72,17 @@ export default function Home() {
           <div className="w-full lg:w-2/3">
             <div className="overflow-hidden text-xs">
               <style jsx global>{`
+                /* Dark theme for stock cards */
+                .bg-white.rounded-lg {
+                  background-color: #1e293b !important;
+                  color: #e2e8f0 !important;
+                }
+                .bg-gray-200 {
+                  background-color: #334155 !important;
+                }
+                .text-gray-900 {
+                  color: #f1f5f9 !important;
+                }
                 /* Make stock cards more compact */
                 .grid.gap-5 {
                   gap: 0.5rem !important;
@@ -56,6 +91,13 @@ export default function Home() {
                 .text-xl {
                   font-size: 0.875rem !important;
                   line-height: 1.25rem !important;
+                }
+                /* Button styling */
+                .bg-indigo-600 {
+                  background-color: #4f46e5 !important;
+                }
+                .bg-indigo-600:hover {
+                  background-color: #4338ca !important;
                 }
                 /* Smaller buttons */
                 .px-4.py-2 {
