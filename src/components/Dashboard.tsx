@@ -52,9 +52,9 @@ export default function Dashboard() {
   // Get available stocks
   const availableStocks = data?.stocks || [];
   
-  // Sort stocks by change percent (biggest movers first)
+  // Sort stocks alphabetically by symbol
   const sortedStocks = availableStocks.length > 0
-    ? [...availableStocks].sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent))
+    ? [...availableStocks].sort((a, b) => a.symbol.localeCompare(b.symbol))
     : [];
   
   // Determine which stocks are loaded and which are pending
@@ -63,8 +63,8 @@ export default function Dashboard() {
   
   return (
     <div>
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4 sm:mb-0">US Stock Dashboard</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-center ">
+        <h1 className="text-xl font-bold text-gray-900 mb-4 sm:mb-0">US Stock Dashboard</h1>
         
         <div className="flex items-center">
           {loadingMessage && (
