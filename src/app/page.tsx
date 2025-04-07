@@ -1,6 +1,7 @@
 'use client';
 
 import USMarkets from "@/components/USMarkets";
+import CryptoMarkets from "@/components/CryptoMarkets";
 import Dashboard from '@/components/Dashboard';
 
 export default function Home() {
@@ -158,20 +159,22 @@ export default function Home() {
           
           {/* Always side-by-side layout with fixed widths */}
           <div id="layout-container">
-            {/* Left side - USMarkets */}
+            {/* Left side - USMarkets and CryptoMarkets */}
             <div id="markets-container" style={{
               fontSize: '0.75rem',
               overflow: 'hidden',
             }}>
               <USMarkets />
+            
             </div>
             
             {/* Right side - Dashboard */}
-            <div id="dashboard-container" style={{
+            <div id="dashboard-container" className="flex flex-col" style={{
               fontSize: '0.75rem',
               overflow: 'hidden',
             }}>
               <Dashboard />
+              <CryptoMarkets />
             </div>
           </div>
         </div>

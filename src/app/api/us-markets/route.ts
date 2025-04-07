@@ -45,11 +45,25 @@ export async function GET() {
         allTimeHigh: 20205,
       },
       {
+        id: "NQW00",
+        name: "NASDAQ Futures",
+        exchange: "CME_EMINIS",
+        previousClose: 17539.0,
+        allTimeHigh: 22319,
+      },
+      {
         id: ".DJI",
         name: "Dow Jones",
         exchange: "INDEXDJX",
         previousClose: 38314.86,
         allTimeHigh: 45074,
+      },
+      {
+        id: "YMW00",
+        name: "Dow Futures",
+        exchange: "CBOT",
+        previousClose: 38530.0,
+        allTimeHigh: 44706,
       },
     ];
 
