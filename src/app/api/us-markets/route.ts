@@ -58,22 +58,9 @@ export async function GET() {
         console.log(`Price: ${price} (from "${priceText}")`);
 
         // 2. Get the percentage change
-        let percentText = "";
+        // Use a more specific selector to target only the first JwB6zf element
+        const percentText = $("div.JwB6zf").first().text().trim();
         let changePercent = 0;
-
-        // Try different approaches to get percentage change
-        // First try the JwB6zf class which usually contains it
-        percentText = $("div.JwB6zf").text().trim();
-
-        if (!percentText) {
-          // If not found, try another selector
-          $("span.NydbP").each((i, elem) => {
-            const text = $(elem).text().trim();
-            if (text.includes("%") && !percentText) {
-              percentText = text;
-            }
-          });
-        }
 
         if (percentText) {
           // Extract the percentage value
@@ -81,7 +68,10 @@ export async function GET() {
           if (match && match[1]) {
             changePercent = parseFloat(match[1]);
             // Check for negative indicators
-            if (percentText.includes("↓") || percentText.includes("-")) {
+            if (
+              percentText.includes("↓") ||
+              $("div.JwB6zf").first().closest("span.VOXKNe").length > 0
+            ) {
               changePercent = -Math.abs(changePercent);
             }
           }
@@ -92,25 +82,20 @@ export async function GET() {
         );
 
         // 3. Get the change points
-        // Try different selectors for points change
-        let changeText = $(".P2Luy").text().trim();
-
-        if (!changeText) {
-          // For VIX, the change points might be in a span with class P2Luy
-          changeText = $("span.P2Luy").text().trim();
-        }
-
+        // Try to get the exact element
+        const changeText = $("span.P2Luy").first().text().trim();
         let changePoints = 0;
 
         if (changeText) {
-          // Extract the numeric value
+          // Format is typically "-345.65 Today" or "+123.45 Today"
           const match = changeText.match(/([-+]?[\d,.]+)/);
           if (match && match[1]) {
             changePoints = parseFloat(match[1].replace(/,/g, ""));
-            // Ensure the sign is correct
-            if (changeText.includes("+") && changePoints < 0) {
-              changePoints = Math.abs(changePoints);
-            } else if (changeText.includes("-") && changePoints > 0) {
+            // Ensure sign matches percentage change
+            if (
+              (changePercent < 0 && changePoints > 0) ||
+              (changePercent > 0 && changePoints < 0)
+            ) {
               changePoints = -changePoints;
             }
           }

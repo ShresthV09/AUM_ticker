@@ -7,12 +7,12 @@ const ALL_SYMBOLS = [
   "AAPL",
   "MSFT",
   "GOOGL",
-  // Removing the rest of the symbols to reduce API calls
-  // "META",
-  // "TSLA",
-  // "AMZN",
-  // "NVDA",
-  // "AVGO",
+  "META",
+  "TSLA",
+  "AMZN",
+  "NVDA",
+  "AVGO",
+  // Restored all stock symbols
 ];
 
 // Function to create mock data when API fails
@@ -35,62 +35,49 @@ function createMockStockData(symbol: string): StockData {
   };
 }
 
-// Get basic stock data with fallback to mock data
-async function getBasicStockData(symbol: string): Promise<StockData> {
-  try {
-    // Try to get real data from Finnhub
-    const stocks = await getBatchStockData([symbol]);
-    return stocks[0];
-  } catch (error) {
-    console.error(`API Error for ${symbol}, using mock data:`, error);
-    // Use mock data when API fails
-    return createMockStockData(symbol);
-  }
-}
+// No longer needed - removed basic stock data function
+// async function getBasicStockData(symbol: string): Promise<StockData> { ... }
 
-// Process a batch of stock symbols
-async function processBatch(symbols: string[]): Promise<StockData[]> {
-  try {
-    // Try to get all data from Finnhub
-    return await getBatchStockData(symbols);
-  } catch (error) {
-    console.error(
-      "Error in batch processing, falling back to individual requests:",
-      error
-    );
-
-    // Fallback to individual requests with mock data
-    const results: StockData[] = [];
-    for (const symbol of symbols) {
-      try {
-        const data = await getBasicStockData(symbol);
-        results.push(data);
-      } catch {
-        console.error(`Error getting data for ${symbol}, using mock data`);
-        results.push(createMockStockData(symbol));
-      }
-    }
-    return results;
-  }
-}
+// No longer needed - removing processBatch function
+// async function processBatch(symbols: string[]): Promise<StockData[]> { ... }
 
 export async function GET() {
   try {
     const startTime = Date.now();
-    let results: StockData[] = [];
+    console.log("Starting stock data fetch process...");
 
-    console.log("Starting stock data fetch...");
+    // Directly fetch stock data with the simplified approach
+    let results: StockData[] = [];
     try {
-      // Process all symbols at once, with automatic fallback
-      results = await processBatch(ALL_SYMBOLS);
+      results = await getBatchStockData(ALL_SYMBOLS);
+      console.log(
+        `Successfully fetched ${results.length}/${ALL_SYMBOLS.length} stocks`
+      );
     } catch (error) {
-      console.error("Error processing stocks batch:", error);
-      // If all attempts fail, return mock data for all symbols
-      results = ALL_SYMBOLS.map(createMockStockData);
+      console.error("Error fetching stock data batch:", error);
+      // If we have partial results, use those and fill in the rest with mock data
+      const existingSymbols = new Set(results.map((stock) => stock.symbol));
+      const missingSymbols = ALL_SYMBOLS.filter(
+        (symbol) => !existingSymbols.has(symbol)
+      );
+
+      if (missingSymbols.length > 0) {
+        console.log(
+          `Creating mock data for ${missingSymbols.length} missing stocks`
+        );
+        const mockData = missingSymbols.map(createMockStockData);
+        results = [...results, ...mockData];
+      }
+
+      // If we have no results at all, create mock data for everything
+      if (results.length === 0) {
+        console.log("No stocks fetched, using all mock data");
+        results = ALL_SYMBOLS.map(createMockStockData);
+      }
     }
 
     const endTime = Date.now();
-    console.log(`Fetched ${results.length} stocks in ${endTime - startTime}ms`);
+    console.log(`Stock data process completed in ${endTime - startTime}ms`);
 
     return NextResponse.json({
       stocks: results,

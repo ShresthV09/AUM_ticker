@@ -51,18 +51,22 @@ export async function GET() {
         console.log(`Price: ${price} (from "${priceText}")`);
 
         // 2. Get the percentage change (inside JwB6zf div)
-        const percentText = $(".JwB6zf").text().trim();
+        // Use a more specific selector to target only the first JwB6zf element
+        const percentText = $("div.JwB6zf").first().text().trim();
         let changePercent = 0;
 
         // Parse the percentage text (usually in format "↓1.49%")
         if (percentText) {
-          // Remove any non-numeric characters except minus sign and decimal point
-          const percentMatch = percentText.match(/([-\d.]+)%/);
+          // Extract just the number and % sign
+          const percentMatch = percentText.match(/([-+]?\d+\.?\d*)%/);
           if (percentMatch && percentMatch[1]) {
             changePercent = parseFloat(percentMatch[1]);
             // Check if it should be negative based on arrow direction
-            if (percentText.includes("↓") && changePercent > 0) {
-              changePercent = -changePercent;
+            if (
+              percentText.includes("↓") ||
+              $("div.JwB6zf").first().closest("span.VOXKNe").length > 0
+            ) {
+              changePercent = -Math.abs(changePercent);
             }
           }
         }
@@ -70,8 +74,8 @@ export async function GET() {
           `Percent Change: ${changePercent}% (from "${percentText}")`
         );
 
-        // 3. Get the absolute change value (P2Luy Ebnabc)
-        const changeText = $(".P2Luy.Ebnabc").text().trim();
+        // 3. Get the absolute change value - try both up and down classes
+        const changeText = $("span.P2Luy").first().text().trim();
         let change = 0;
 
         if (changeText) {
@@ -79,9 +83,16 @@ export async function GET() {
           const changeMatch = changeText.match(/([-+]?[\d,.]+)/);
           if (changeMatch && changeMatch[1]) {
             change = parseFloat(changeMatch[1].replace(/,/g, ""));
+            // Ensure sign matches percentage change
+            if (
+              (changePercent < 0 && change > 0) ||
+              (changePercent > 0 && change < 0)
+            ) {
+              change = -change;
+            }
           }
         }
-        console.log(`Change: ${change} (from "${changeText}")`);
+        console.log(`Change Points: ${change} (from "${changeText}")`);
 
         // Get market data section info (open, high, low, etc.)
         let open = 0;

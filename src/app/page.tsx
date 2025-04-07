@@ -27,6 +27,7 @@ export default function Home() {
         <div className="w-full">
           <Dashboard />
         </div>
+       
       </div>
     </main>
   );

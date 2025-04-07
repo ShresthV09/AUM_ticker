@@ -6,7 +6,7 @@ import StockCard from './StockCard';
 import { StockData } from '@/types';
 
 // All stocks symbols (same order as API)
-const ALL_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL']; // Reduced symbols
+const ALL_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'META', 'TSLA', 'AMZN', 'NVDA', 'AVGO']; // Restored full set
 // No longer using batches
 // const FIRST_BATCH = ALL_SYMBOLS.slice(0, 4);
 // const SECOND_BATCH = ALL_SYMBOLS.slice(4);
@@ -15,7 +15,7 @@ const ALL_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL']; // Reduced symbols
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function Dashboard() {
-  const [loadingMessage, setLoadingMessage] = useState('Loading stocks...');
+  const [loadingMessage, setLoadingMessage] = useState('Loading all stocks...');
   
   // SWR hook for data fetching - no auto refresh
   const { data, error, isLoading, mutate } = useSWR(
@@ -40,7 +40,7 @@ export default function Dashboard() {
   
   // Manual refresh handler
   const handleRefresh = () => {
-    setLoadingMessage('Loading stocks...');
+    setLoadingMessage('Loading all stocks...');
     mutate();
   };
   
@@ -104,8 +104,8 @@ export default function Dashboard() {
       
       {/* Stock Grid */}
       {isLoading && availableStocks.length === 0 ? (
-        <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
-          {[...Array(3)].map((_, i) => (
+        <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4">
+          {[...Array(8)].map((_, i) => (
             <div key={i} className="bg-white rounded-lg shadow-md p-5 animate-pulse">
               <div className="flex justify-between items-start mb-3">
                 <div>
@@ -127,7 +127,7 @@ export default function Dashboard() {
           ))}
         </div>
       ) : availableStocks.length > 0 ? (
-        <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
+        <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4">
           {sortedStocks.map((stock: StockData) => (
             <StockCard key={stock.symbol} stock={stock} />
           ))}

@@ -117,70 +117,65 @@ export const fallbackCompanyNames: Record<string, string> = {
   AVGO: "Broadcom Inc.",
 };
 
-// Process a single stock with built-in error handling
-async function processStockRequest(symbol: string): Promise<StockData> {
-  try {
-    return await getFullStockData(symbol);
-  } catch {
-    console.error(`Falling back to basic data for ${symbol}`);
-    const quote = await getStockQuote(symbol);
-    return {
-      symbol,
-      companyName: fallbackCompanyNames[symbol] || symbol,
-      price: quote.c,
-      change: quote.d,
-      changePercent: quote.dp,
-      highDay: quote.h,
-      lowDay: quote.l,
-      openPrice: quote.o,
-      prevClose: quote.pc,
-      updateTime: quote.t,
-    };
-  }
-}
-
-// Queue processor with delay between requests
-async function processQueue<T>(
-  items: string[],
-  processFn: (item: string) => Promise<T>,
-  delayMs: number = 200
-): Promise<T[]> {
-  const results: T[] = [];
-
-  for (const item of items) {
-    try {
-      // Process one item
-      const result = await processFn(item);
-      results.push(result);
-
-      // Add delay between requests (except after the last one)
-      if (item !== items[items.length - 1]) {
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-      }
-    } catch {
-      console.error(`Error processing item ${item}`);
-    }
-  }
-
-  return results;
-}
-
 // Get multiple stocks data sequentially to respect rate limits
 export async function getBatchStockData(
   symbols: string[]
 ): Promise<StockData[]> {
   try {
-    // Process stock requests sequentially with 200ms delay between each
-    return await processQueue(symbols, processStockRequest, 200);
+    console.log(`Starting to fetch ${symbols.length} stocks sequentially...`);
+    const results: StockData[] = [];
+
+    // Process each symbol one by one with a delay between requests
+    for (const symbol of symbols) {
+      try {
+        console.log(`Processing stock: ${symbol}`);
+        // Try to get full data (quote + profile)
+        const data = await getFullStockData(symbol);
+        results.push(data);
+        console.log(`Successfully fetched data for ${symbol}`);
+
+        // Add delay between requests (except after the last one)
+        if (symbol !== symbols[symbols.length - 1]) {
+          console.log(`Adding delay before next request...`);
+          await new Promise((resolve) => setTimeout(resolve, 300));
+        }
+      } catch (error) {
+        console.error(`Error processing ${symbol}, trying fallback:`, error);
+        // Try fallback to just quote with fallback company name
+        try {
+          const quote = await getStockQuote(symbol);
+          results.push({
+            symbol,
+            companyName: fallbackCompanyNames[symbol] || symbol,
+            price: quote.c,
+            change: quote.d,
+            changePercent: quote.dp,
+            highDay: quote.h,
+            lowDay: quote.l,
+            openPrice: quote.o,
+            prevClose: quote.pc,
+            updateTime: quote.t,
+          });
+          console.log(`Used fallback data for ${symbol}`);
+        } catch (fallbackError) {
+          console.error(`Complete failure for ${symbol}:`, fallbackError);
+          // Don't add to results if we can't get any data
+        }
+      }
+    }
+
+    console.log(
+      `Completed fetching ${results.length}/${symbols.length} stocks`
+    );
+    return results;
   } catch (error) {
-    console.error("Error fetching batch stock data:", error);
+    console.error("Error in batch stock data processing:", error);
     throw new Error("Failed to fetch batch stock data");
   }
 }
 
-// BATMMAAN stocks
+// BATMMAAN stocks (removed Bloomberg/BBG)
 export const BATMMAAN_SYMBOLS = [
-  "BBG",
   "AAPL",
   "TSLA",
   "MSFT",
