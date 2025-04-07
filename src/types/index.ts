@@ -20,6 +20,7 @@ export interface StockData {
   openPrice: number;
   prevClose: number;
   updateTime: number;
+  allTimeHigh?: number; // All-time high price
 }
 
 export interface CompanyProfile {

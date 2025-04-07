@@ -21,6 +21,18 @@ function createMockStockData(symbol: string): StockData {
   const randomChange = Math.floor(Math.random() * 20) - 10; // -10 to +10
   const randomPercent = (randomChange / randomPrice) * 100;
 
+  // Static ATH data for each stock
+  const allTimeHighs: Record<string, number> = {
+    GOOGL: 208.7,
+    AVGO: 252,
+    AAPL: 260,
+    TSLA: 489,
+    META: 719,
+    MSFT: 468,
+    AMZN: 236,
+    NVDA: 153,
+  };
+
   return {
     symbol,
     companyName: fallbackCompanyNames[symbol] || symbol,
@@ -32,6 +44,7 @@ function createMockStockData(symbol: string): StockData {
     openPrice: randomPrice - Math.floor(Math.random() * 10),
     prevClose: randomPrice - randomChange,
     updateTime: Date.now(),
+    allTimeHigh: allTimeHighs[symbol],
   };
 }
 

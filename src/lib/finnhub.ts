@@ -87,6 +87,18 @@ export async function getFullStockData(symbol: string): Promise<StockData> {
       getCompanyProfile(symbol),
     ]);
 
+    // Static ATH data for each stock
+    const allTimeHighs: Record<string, number> = {
+      GOOGL: 208.7,
+      AVGO: 252,
+      AAPL: 260,
+      TSLA: 489,
+      META: 719,
+      MSFT: 468,
+      AMZN: 236,
+      NVDA: 153,
+    };
+
     return {
       symbol,
       companyName: profile.name,
@@ -98,6 +110,7 @@ export async function getFullStockData(symbol: string): Promise<StockData> {
       openPrice: quote.o,
       prevClose: quote.pc,
       updateTime: quote.t,
+      allTimeHigh: allTimeHighs[symbol],
     };
   } catch (error) {
     console.error(`Error fetching full data for ${symbol}:`, error);
@@ -144,6 +157,19 @@ export async function getBatchStockData(
         // Try fallback to just quote with fallback company name
         try {
           const quote = await getStockQuote(symbol);
+
+          // Static ATH data for each stock
+          const allTimeHighs: Record<string, number> = {
+            GOOGL: 208.7,
+            AVGO: 252,
+            AAPL: 260,
+            TSLA: 489,
+            META: 719,
+            MSFT: 468,
+            AMZN: 236,
+            NVDA: 153,
+          };
+
           results.push({
             symbol,
             companyName: fallbackCompanyNames[symbol] || symbol,
@@ -155,6 +181,7 @@ export async function getBatchStockData(
             openPrice: quote.o,
             prevClose: quote.pc,
             updateTime: quote.t,
+            allTimeHigh: allTimeHighs[symbol],
           });
           console.log(`Used fallback data for ${symbol}`);
         } catch (fallbackError) {
