@@ -3,6 +3,7 @@
 import USMarkets from "@/components/USMarkets";
 import CryptoMarkets from "@/components/CryptoMarkets";
 import Dashboard from '@/components/Dashboard';
+import Futures from "@/components/Futures";
 
 export default function Home() {
   return (
@@ -165,6 +166,8 @@ export default function Home() {
               overflow: 'hidden',
             }}>
               <USMarkets />
+              <h1 className="text-2xl font-bold">Futures</h1>
+              <Futures />
             
             </div>
             
@@ -175,6 +178,7 @@ export default function Home() {
             }}>
               <Dashboard />
               <CryptoMarkets />
+         
             </div>
           </div>
         </div>

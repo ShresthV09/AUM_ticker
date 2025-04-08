@@ -24,33 +24,26 @@ export async function GET() {
     // Define indices with their previous close values and all-time highs
     const US_INDICES = [
       {
-        id: "VIX",
-        name: "VIX",
-        exchange: "INDEXCBOE",
-        previousClose: 46.98,
-        allTimeHigh: 85.47,
-      },
-      {
-        id: ".IXIC",
-        name: "NASDAQ",
-        exchange: "INDEXNASDAQ",
-        previousClose: 15603.26,
-        allTimeHigh: 20205,
-      },
-      {
-        id: ".INX",
-        name: "S&P 500",
-        exchange: "INDEXSP",
-        previousClose: 5062.25,
-        allTimeHigh: 6128.18,
+        id: "NQW00",
+        name: "NASDAQ Futures",
+        exchange: "CME_EMINIS",
+        previousClose: 17563.25,
+        allTimeHigh: 22319,
       },
 
       {
-        id: ".DJI",
-        name: "Dow Jones",
-        exchange: "INDEXDJX",
-        previousClose: 37965.6,
-        allTimeHigh: 45074,
+        id: "YMW00",
+        name: "Dow Futures",
+        exchange: "CBOT",
+        previousClose: 38165.0,
+        allTimeHigh: 44706,
+      },
+      {
+        id: "ESW00",
+        name: "S&P Futures",
+        exchange: "CME_EMINIS",
+        previousClose: 5097.25,
+        allTimeHigh: 6067,
       },
     ];
 
