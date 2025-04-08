@@ -4,6 +4,8 @@ import USMarkets from "@/components/USMarkets";
 import CryptoMarkets from "@/components/CryptoMarkets";
 import Dashboard from '@/components/Dashboard';
 import Futures from "@/components/Futures";
+import Euro from "@/components/Euro";
+import Asian from "@/components/Asian";
 
 export default function Home() {
   return (
@@ -165,9 +167,11 @@ export default function Home() {
               fontSize: '0.75rem',
               overflow: 'hidden',
             }}>
+                <h1 className="text-xl ml-2 font-bold">US Indices</h1>
               <USMarkets />
               <h1 className="text-2xl font-bold">Futures</h1>
               <Futures />
+
             
             </div>
             
@@ -177,7 +181,56 @@ export default function Home() {
               overflow: 'hidden',
             }}>
               <Dashboard />
+              <div className="mt-6">
+                <h1 className="text-2xl font-bold mb-[24px]">Crypto and Dollor index</h1>
               <CryptoMarkets />
+              </div>
+         
+            </div>
+          </div>
+        </div>
+      </main>
+
+
+      <main style={{
+        display: 'flex',
+        minHeight: '100vh',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '0.5rem',
+        backgroundColor: '#f3f4f6',
+      }}>
+        <div style={{
+          zIndex: 10,
+          width: '100%',
+          maxWidth: '72rem',
+        }}>
+       
+         
+          
+         
+          <div id="layout-container">
+       
+            <div id="r" style={{
+              fontSize: '0.75rem',
+              overflow: 'hidden',
+              width: '50%',
+            }}>
+               <h1 className="text-2xl font-bold">Europe</h1>
+           <Euro />
+              
+            
+            </div>
+            
+         
+            <div id="" className="flex flex-col" style={{
+              fontSize: '0.75rem',
+              overflow: 'hidden',
+              width: '50%',
+
+            }}>
+             <h1 className="text-2xl font-bold">Asia</h1>
+             <Asian />
          
             </div>
           </div>
