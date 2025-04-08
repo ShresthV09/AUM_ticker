@@ -26,7 +26,7 @@ export async function GET() {
       {
         id: "BTC-USD",
         name: "Bitcoin",
-        previousClose: 78252.87,
+        previousClose: 79255.61,
         allTimeHigh: 108268,
         isCrypto: true,
       },
@@ -34,7 +34,7 @@ export async function GET() {
         id: "NYICDX",
         name: "Dollar Index",
         exchange: "INDEXNYSEGIS",
-        previousClose: 102.89,
+        previousClose: 103.45,
         allTimeHigh: 164.72,
       },
     ];
