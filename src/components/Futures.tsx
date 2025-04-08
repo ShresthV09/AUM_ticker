@@ -114,7 +114,7 @@ const USMarkets = () => {
               
               <div className="mt-1 text-xs flex justify-between">
                 <span>All-Time High: {market.allTimeHigh.toLocaleString()}</span>
-                <span className="text-amber-600">
+                <span className="text-red-600">
                   {market.percentFromATH > 0 ? 
                     `${market.percentFromATH.toFixed(2)}% below ATH` : 
                     'At All-Time High'}
