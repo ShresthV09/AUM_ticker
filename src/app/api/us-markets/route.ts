@@ -31,6 +31,13 @@ export async function GET() {
         allTimeHigh: 85.47,
       },
       {
+        id: "UVXY",
+        name: "ProShares Ultra VIX Short-Term Futures ETF",
+        exchange: "BATS",
+        previousClose: 39.75,
+        allTimeHigh: 65.87,
+      },
+      {
         id: ".IXIC",
         name: "NASDAQ",
         exchange: "INDEXNASDAQ",
@@ -44,7 +51,6 @@ export async function GET() {
         previousClose: 5062.25,
         allTimeHigh: 6128.18,
       },
-
       {
         id: ".DJI",
         name: "Dow Jones",
