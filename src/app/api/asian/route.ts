@@ -26,21 +26,18 @@ export async function GET() {
         id: "NI225",
         name: "Nikkei 225",
         exchange: "INDEXNIKKEI",
-        previousClose: 31136.58,
         allTimeHigh: 42426,
       },
       {
         id: "000001",
         name: "SSE Composite",
         exchange: "SHA",
-        previousClose: 3096.58,
         allTimeHigh: 6124,
       },
       {
         id: "HSI",
         name: "Hang Seng",
         exchange: "INDEXHANGSENG",
-        previousClose: 19828.3,
         allTimeHigh: 33484,
       },
     ];
@@ -93,12 +90,30 @@ export async function GET() {
           }
         }
 
-        // If still no price, use previous close as fallback
-        if (currentPrice === 0) {
-          currentPrice = index.previousClose;
+        // Get previous close value
+        let previousClose = 0;
+
+        // Find the div containing "Previous close" text
+        const prevCloseRow = $(".gyFHrc").filter(function () {
+          return $(this).find(".mfs7Fc").text().trim() === "Previous close";
+        });
+
+        if (prevCloseRow.length > 0) {
+          const prevCloseText = prevCloseRow.find(".P6K39c").text().trim();
+          // Remove currency symbols and commas, then parse as float
+          previousClose = parseFloat(prevCloseText.replace(/[$,]/g, "")) || 0;
           console.log(
-            `Warning: Using previous close as fallback for ${index.name}`
+            `Found previous close for ${index.name}: ${previousClose}`
           );
+        }
+
+        // If we couldn't get current price or previous close, throw error
+        if (currentPrice === 0) {
+          throw new Error(`Failed to get current price for ${index.name}`);
+        }
+
+        if (previousClose === 0) {
+          throw new Error(`Failed to get previous close for ${index.name}`);
         }
 
         // Calculate percentage from all-time high
@@ -110,7 +125,7 @@ export async function GET() {
           indexName: index.name,
           symbol: index.id,
           currentValue: currentPrice,
-          previousClose: index.previousClose,
+          previousClose: previousClose,
           allTimeHigh: index.allTimeHigh,
           percentFromATH: Math.round(percentFromATH * 100) / 100, // Round to 2 decimal places
         };
@@ -118,20 +133,17 @@ export async function GET() {
         // Add to our Asian market data array
         indicesAsia.push(indexData);
         console.log(
-          `Successfully processed data for ${index.name}: ${currentPrice}`
+          `Successfully processed data for ${index.name}: ${currentPrice} (prev close: ${previousClose})`
         );
       } catch (error) {
         console.error(`Error fetching data for ${index.name}:`, error);
 
-        // Add data with just previous close on error
-        indicesAsia.push({
-          indexName: index.name,
-          symbol: index.id,
-          currentValue: index.previousClose, // Use previous close as fallback
-          previousClose: index.previousClose,
-          allTimeHigh: index.allTimeHigh,
-          percentFromATH: 0,
-        });
+        // Instead of using fallback, propagate the error
+        throw new Error(
+          `Failed to fetch data for ${index.name}: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
       }
     }
 

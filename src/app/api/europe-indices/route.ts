@@ -26,21 +26,18 @@ export async function GET() {
         id: "UKX",
         name: "FTSE 100",
         exchange: "INDEXFTSE",
-        previousClose: 7702.08,
         allTimeHigh: 8742.75,
       },
       {
         id: "PX1",
         name: "CAC 40",
         exchange: "INDEXEURO",
-        previousClose: 6927.12,
         allTimeHigh: 8260,
       },
       {
         id: "DAX",
         name: "DAX",
         exchange: "INDEXDB",
-        previousClose: 19789.62,
         allTimeHigh: 23476.01,
       },
     ];
@@ -93,12 +90,30 @@ export async function GET() {
           }
         }
 
-        // If still no price, use previous close as fallback
-        if (currentPrice === 0) {
-          currentPrice = index.previousClose;
+        // Get previous close value
+        let previousClose = 0;
+
+        // Find the div containing "Previous close" text
+        const prevCloseRow = $(".gyFHrc").filter(function () {
+          return $(this).find(".mfs7Fc").text().trim() === "Previous close";
+        });
+
+        if (prevCloseRow.length > 0) {
+          const prevCloseText = prevCloseRow.find(".P6K39c").text().trim();
+          // Remove currency symbols and commas, then parse as float
+          previousClose = parseFloat(prevCloseText.replace(/[$,]/g, "")) || 0;
           console.log(
-            `Warning: Using previous close as fallback for ${index.name}`
+            `Found previous close for ${index.name}: ${previousClose}`
           );
+        }
+
+        // If we couldn't get current price or previous close, throw error
+        if (currentPrice === 0) {
+          throw new Error(`Failed to get current price for ${index.name}`);
+        }
+
+        if (previousClose === 0) {
+          throw new Error(`Failed to get previous close for ${index.name}`);
         }
 
         // Calculate percentage from all-time high
@@ -110,7 +125,7 @@ export async function GET() {
           indexName: index.name,
           symbol: index.id,
           currentValue: currentPrice,
-          previousClose: index.previousClose,
+          previousClose: previousClose,
           allTimeHigh: index.allTimeHigh,
           percentFromATH: Math.round(percentFromATH * 100) / 100, // Round to 2 decimal places
         };
@@ -118,24 +133,21 @@ export async function GET() {
         // Add to our US market data array
         indicesEurope.push(indexData);
         console.log(
-          `Successfully processed data for ${index.name}: ${currentPrice}`
+          `Successfully processed data for ${index.name}: ${currentPrice} (prev close: ${previousClose})`
         );
       } catch (error) {
         console.error(`Error fetching data for ${index.name}:`, error);
 
-        // Add data with just previous close on error
-        indicesEurope.push({
-          indexName: index.name,
-          symbol: index.id,
-          currentValue: index.previousClose, // Use previous close as fallback
-          previousClose: index.previousClose,
-          allTimeHigh: index.allTimeHigh,
-          percentFromATH: 0,
-        });
+        // Instead of using fallback, propagate the error
+        throw new Error(
+          `Failed to fetch data for ${index.name}: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
       }
     }
 
-    console.log(`Returning data for ${indicesEurope.length} US indices`);
+    console.log(`Returning data for ${indicesEurope.length} European indices`);
 
     // Return the parsed data
     return NextResponse.json(indicesEurope);
@@ -144,7 +156,7 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        error: "Failed to fetch US market data",
+        error: "Failed to fetch EU market data",
         message: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }

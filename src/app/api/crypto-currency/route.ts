@@ -26,7 +26,6 @@ export async function GET() {
       {
         id: "BTC-USD",
         name: "Bitcoin",
-        previousClose: 79255.61,
         allTimeHigh: 108268,
         isCrypto: true,
       },
@@ -34,7 +33,6 @@ export async function GET() {
         id: "NYICDX",
         name: "Dollar Index",
         exchange: "INDEXNYSEGIS",
-        previousClose: 103.45,
         allTimeHigh: 164.72,
       },
     ];
@@ -96,11 +94,31 @@ export async function GET() {
           }
         }
 
-        // If still no price, use previous close as fallback
-        if (currentPrice === 0) {
-          currentPrice = instrument.previousClose;
+        // Get previous close value
+        let previousClose = 0;
+
+        // Find the div containing "Previous close" text
+        const prevCloseRow = $(".gyFHrc").filter(function () {
+          return $(this).find(".mfs7Fc").text().trim() === "Previous close";
+        });
+
+        if (prevCloseRow.length > 0) {
+          const prevCloseText = prevCloseRow.find(".P6K39c").text().trim();
+          // Remove currency symbols and commas, then parse as float
+          previousClose = parseFloat(prevCloseText.replace(/[$,]/g, "")) || 0;
           console.log(
-            `Warning: Using previous close as fallback for ${instrument.name}`
+            `Found previous close for ${instrument.name}: ${previousClose}`
+          );
+        }
+
+        // If we couldn't get current price or previous close, throw error
+        if (currentPrice === 0) {
+          throw new Error(`Failed to get current price for ${instrument.name}`);
+        }
+
+        if (previousClose === 0) {
+          throw new Error(
+            `Failed to get previous close for ${instrument.name}`
           );
         }
 
@@ -114,7 +132,7 @@ export async function GET() {
           name: instrument.name,
           symbol: instrument.id,
           currentValue: currentPrice,
-          previousClose: instrument.previousClose,
+          previousClose: previousClose,
           allTimeHigh: instrument.allTimeHigh,
           percentFromATH: Math.round(percentFromATH * 100) / 100, // Round to 2 decimal places
         };
@@ -122,20 +140,17 @@ export async function GET() {
         // Add to our data array
         cryptoData.push(instrumentData);
         console.log(
-          `Successfully processed data for ${instrument.name}: ${currentPrice}`
+          `Successfully processed data for ${instrument.name}: ${currentPrice} (prev close: ${previousClose})`
         );
       } catch (error) {
         console.error(`Error fetching data for ${instrument.name}:`, error);
 
-        // Add data with just previous close on error
-        cryptoData.push({
-          name: instrument.name,
-          symbol: instrument.id,
-          currentValue: instrument.previousClose, // Use previous close as fallback
-          previousClose: instrument.previousClose,
-          allTimeHigh: instrument.allTimeHigh,
-          percentFromATH: 0,
-        });
+        // Instead of using fallback, propagate the error
+        throw new Error(
+          `Failed to fetch data for ${instrument.name}: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
       }
     }
 
